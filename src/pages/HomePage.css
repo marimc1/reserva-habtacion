@@ -160,3 +160,128 @@
   }
 }
 
+
+.home-section {
+  margin: 0 4rem 2rem;
+  padding: 2.5rem;
+  border-radius: 1.5rem;
+  background: #fffaf2;
+  border: 1px solid rgba(70, 45, 21, 0.1);
+  box-shadow: 0 12px 30px rgba(70, 45, 21, 0.08);
+}
+
+.home-section h2 {
+  margin: 0 0 0.75rem;
+  color: #3d2611;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2rem;
+}
+
+.home-section p {
+  margin: 0;
+  color: #5f4a38;
+  line-height: 1.6;
+}
+
+.home-reservation {
+  display: grid;
+  gap: 1.5rem;
+  background:
+    linear-gradient(135deg, rgba(255, 250, 242, 0.96), rgba(238, 220, 193, 0.78)),
+    #fffaf2;
+}
+
+.home-reservation__intro {
+  max-width: 760px;
+}
+
+.reservation-search {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 16px 36px rgba(61, 38, 17, 0.14);
+}
+
+.reservation-search__field {
+  display: grid;
+  flex: 1 1 0;
+  gap: 0.5rem;
+  min-width: 160px;
+}
+
+.reservation-search__field span {
+  color: #4f2f12;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reservation-search__field input,
+.reservation-search__field select {
+  min-height: 52px;
+  width: 100%;
+  border: 1px solid rgba(95, 74, 56, 0.18);
+  border-radius: 0.9rem;
+  padding: 0 1rem;
+  background: #fffaf2;
+  color: #3d2611;
+  font: inherit;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.reservation-search__field input:focus,
+.reservation-search__field select:focus {
+  border-color: #b7822f;
+  box-shadow: 0 0 0 4px rgba(183, 130, 47, 0.16);
+}
+
+.reservation-search__button {
+  min-height: 52px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 2.25rem;
+  background: linear-gradient(135deg, #d4af37, #9b6a20);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(183, 130, 47, 0.32);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.reservation-search__button:hover,
+.reservation-search__button:focus {
+  box-shadow: 0 16px 30px rgba(183, 130, 47, 0.4);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 900px) {
+  .home-section {
+    margin: 0 1.5rem 1.5rem;
+    padding: 2rem;
+  }
+
+  .reservation-search {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .reservation-search__field {
+    width: 100%;
+  }
+
+  .reservation-search__button {
+    width: 100%;
+  }
+}

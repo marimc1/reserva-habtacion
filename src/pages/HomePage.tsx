@@ -126,11 +126,42 @@ function HomePage() {
       </section>
 
       {/* RESERVAR */}
-      <section id="reservar" className="home-section">
-        <h2>Reservar habitación</h2>
-        <p>
-          Realiza tu reserva y disfruta de una excelente experiencia.
-        </p>
+      <section id="reservar" className="home-section home-reservation">
+        <div className="home-reservation__intro">
+          <h2>Reservar habitación</h2>
+          <p>
+            Selecciona tus fechas, indica cuántos huéspedes se quedarán y
+            encuentra la mejor habitación disponible.
+          </p>
+        </div>
+
+        <form className="reservation-search" aria-label="Buscar habitación">
+          <label className="reservation-search__field" htmlFor="check-in">
+            <span>Check-in</span>
+            <input id="check-in" name="check-in" type="date" />
+          </label>
+
+          <label className="reservation-search__field" htmlFor="check-out">
+            <span>Check-out</span>
+            <input id="check-out" name="check-out" type="date" />
+          </label>
+
+          <label className="reservation-search__field" htmlFor="guests">
+            <span>Huéspedes</span>
+            <select id="guests" name="guests" defaultValue="1">
+              <option value="1">1 persona</option>
+              <option value="2">2 personas</option>
+              <option value="3">3 personas</option>
+              <option value="4">4 personas</option>
+              <option value="5">5 personas</option>
+              <option value="6">6 personas</option>
+            </select>
+          </label>
+
+          <button className="reservation-search__button" type="submit">
+            Buscar
+          </button>
+        </form>
       </section>
 
       {/* CONTACTO */}
