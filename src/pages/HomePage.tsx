@@ -232,6 +232,7 @@ function HomePage() {
           </p>
         </div>
 
+
         <form className="reservation-search" aria-label="Buscar habitación" onSubmit={handleRoomSearch}>
           <label className="reservation-search__field" htmlFor="check-in">
             <span>Check-in</span>
@@ -243,10 +244,17 @@ function HomePage() {
               onChange={(event) => setCheckIn(event.target.value)}
               required
             />
+
+        <form className="reservation-search" aria-label="Buscar habitación">
+          <label className="reservation-search__field" htmlFor="check-in">
+            <span>Check-in</span>
+            <input id="check-in" name="check-in" type="date" />
+
           </label>
 
           <label className="reservation-search__field" htmlFor="check-out">
             <span>Check-out</span>
+
             <input
               id="check-out"
               name="check-out"
@@ -255,16 +263,23 @@ function HomePage() {
               onChange={(event) => setCheckOut(event.target.value)}
               required
             />
+
+            <input id="check-out" name="check-out" type="date" />
+
           </label>
 
           <label className="reservation-search__field" htmlFor="guests">
             <span>Huéspedes</span>
+
             <select
               id="guests"
               name="guests"
               value={guests}
               onChange={(event) => setGuests(event.target.value)}
             >
+
+            <select id="guests" name="guests" defaultValue="1">
+
               <option value="1">1 persona</option>
               <option value="2">2 personas</option>
               <option value="3">3 personas</option>
@@ -278,6 +293,7 @@ function HomePage() {
             Buscar
           </button>
         </form>
+
 
         <div className="reservation-results" aria-live="polite">
           <p className="reservation-results__message">{searchMessage}</p>
@@ -305,6 +321,7 @@ function HomePage() {
             </div>
           )}
         </div>
+
       </section>
 
       {/* CONTACTO */}
