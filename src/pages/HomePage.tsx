@@ -19,6 +19,64 @@ function HomePage() {
           Hotel Rolex
         </a>
 
+
+        <ul className="home-navbar__menu">
+          <li>
+            <a className="home-navbar__link" href="#inicio">
+              Inicio
+            </a>
+          </li>
+          <li>
+            <a className="home-navbar__link" href="#habitaciones">
+              Habitaciones
+            </a>
+          </li>
+          <li>
+            <a className="home-navbar__link" href="#servicios">
+              Servicios
+            </a>
+          </li>
+          <li>
+            <a className="home-navbar__link" href="#galeria">
+              Galeria
+            </a>
+          </li>
+          <li>
+            <a className="home-navbar__link" href="#contacto">
+              Contacto
+            </a>
+          </li>
+          <li>
+            <a
+              className="home-navbar__link home-navbar__reserve"
+              href="#reservar"
+            >
+              Reservar
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <header id="inicio" className="home-header">
+        <div className="home-header__content">
+          <p className="home-header__eyebrow">Bienvenido a Hotel Rolex</p>
+          <h1>Descansa y disfruta tu estancia.</h1>
+          <a className="home-header__button" href="#reservar">
+            Reservar ahora
+          </a>
+        </div>
+
+        <div
+          className="home-header__image-placeholder"
+          aria-label="Espacio reservado para imagen principal del hotel"
+        >
+          <span>Imagen del hotel</span>
+        </div>
+      </header>
+
+      <section className="home-page__content">
+
+
         <ul className="home-navbar__menu">
           <li>
             <a className="home-navbar__link" href="#inicio">
@@ -58,6 +116,7 @@ function HomePage() {
 
       <section id="inicio" className="home-page__content">
         <h1>Página principal</h1>
+
 
         {user ? (
           <>
