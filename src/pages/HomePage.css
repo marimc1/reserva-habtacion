@@ -82,6 +82,7 @@
   }
 }
 
+
 .home-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 520px);
@@ -158,3 +159,4 @@
     min-height: 280px;
   }
 }
+
