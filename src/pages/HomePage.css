@@ -285,3 +285,113 @@
     width: 100%;
   }
 }
+
+
+.reservation-results {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.reservation-results__message {
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  background: rgba(183, 130, 47, 0.12);
+  color: #4f2f12;
+  font-weight: 700;
+}
+
+.room-cards {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.room-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  gap: 1.5rem;
+  overflow: hidden;
+  padding: 1rem;
+  border: 1px solid rgba(70, 45, 21, 0.12);
+  border-radius: 1.4rem;
+  background: #ffffff;
+  box-shadow: 0 16px 34px rgba(61, 38, 17, 0.12);
+}
+
+.room-card__image-column {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.room-card__image-column img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 1rem;
+  background: #f1e3ca;
+}
+
+.room-card__image-column strong {
+  color: #9b6a20;
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.room-card__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.room-card__content span {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  background: #f7f2ea;
+  color: #7a5421;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.room-card__content h3 {
+  margin: 0;
+  color: #3d2611;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+}
+
+.room-card__content p {
+  max-width: 680px;
+}
+
+.room-card__button {
+  margin-top: 0.4rem;
+  border: 1px solid #b7822f;
+  border-radius: 999px;
+  padding: 0.8rem 1.35rem;
+  background: #ffffff;
+  color: #9b6a20;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.room-card__button:hover,
+.room-card__button:focus {
+  background: #b7822f;
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 760px) {
+  .room-card {
+    grid-template-columns: 1fr;
+  }
+}
+

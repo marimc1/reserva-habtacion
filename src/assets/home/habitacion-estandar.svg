@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="480" viewBox="0 0 720 480" role="img" aria-labelledby="title desc">
+  <title id="title">Habitación estándar</title>
+  <desc id="desc">Ilustración de una habitación estándar con cama doble y ventana.</desc>
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff8eb"/>
+      <stop offset="1" stop-color="#ead2ad"/>
+    </linearGradient>
+    <linearGradient id="bed" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d4af37"/>
+      <stop offset="1" stop-color="#9b6a20"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="480" fill="url(#wall)"/>
+  <rect x="450" y="70" width="160" height="130" rx="14" fill="#9fc6df" stroke="#ffffff" stroke-width="12"/>
+  <path d="M450 135h160M530 70v130" stroke="#ffffff" stroke-width="8"/>
+  <rect x="95" y="235" width="430" height="105" rx="22" fill="#5f4a38"/>
+  <rect x="120" y="190" width="360" height="92" rx="18" fill="#ffffff"/>
+  <rect x="145" y="208" width="135" height="58" rx="12" fill="#f1e3ca"/>
+  <rect x="300" y="208" width="135" height="58" rx="12" fill="#f1e3ca"/>
+  <rect x="105" y="275" width="410" height="92" rx="16" fill="url(#bed)"/>
+  <rect x="80" y="362" width="470" height="26" rx="10" fill="#3d2611"/>
+  <rect x="145" y="388" width="28" height="44" rx="8" fill="#3d2611"/>
+  <rect x="455" y="388" width="28" height="44" rx="8" fill="#3d2611"/>
+  <circle cx="610" cy="300" r="46" fill="#fffaf2" stroke="#d4af37" stroke-width="10"/>
+  <rect x="590" y="342" width="40" height="78" rx="12" fill="#4f2f12"/>
+</svg>
