@@ -4,10 +4,9 @@ import {
   Routes,
 } from "react-router-dom";
 
-
 import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/auth/LoginPage";
-
+import RoomsPage from "../pages/RoomsPage";
 
 function AppRoutes() {
   return (
@@ -15,10 +14,10 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/habitaciones" element={<RoomsPage />} />
       </Routes>
     </BrowserRouter>
   );
 }
-
 
 export default AppRoutes;
