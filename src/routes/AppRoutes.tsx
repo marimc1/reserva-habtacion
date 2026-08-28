@@ -6,6 +6,7 @@ import {
 
 
 import HomePage from "../pages/HomePage";
+import RoomsPage from "../pages/RoomsPage";
 import LoginPage from "../pages/auth/LoginPage";
 
 
@@ -15,6 +16,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/habitaciones" element={<RoomsPage />} />
       </Routes>
     </BrowserRouter>
   );
