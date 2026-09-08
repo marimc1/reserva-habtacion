@@ -5,6 +5,7 @@ import LoginPage from "../pages/auth/LoginPage";
 import RoomsPage from "../pages/RoomsPage";
 import ReservationPage from "../pages/ReservationPage";
 import ServicesPage from "../pages/ServicesPage";
+import FacilitiesPage from "../pages/FacilitiesPage";
 import GalleryPage from "../pages/GalleryPage";
 import ContactPage from "../pages/ContactPage";
 
@@ -16,6 +17,7 @@ function AppRoutes() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/habitaciones" element={<RoomsPage />} />
         <Route path="/servicios" element={<ServicesPage />} />
+        <Route path="/instalaciones" element={<FacilitiesPage />} />
         <Route path="/galeria" element={<GalleryPage />} />
         <Route path="/contacto" element={<ContactPage />} />
         <Route path="/reservar" element={<ReservationPage />} />
