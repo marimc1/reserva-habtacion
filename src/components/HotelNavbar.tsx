@@ -15,6 +15,7 @@ function HotelNavbar() {
   };
 
   const active = (path: string) => location.pathname === path;
+  const profilePath = user ? "/perfil" : "/login";
 
   return (
     <nav className="hotel-navbar">
@@ -30,7 +31,7 @@ function HotelNavbar() {
         <button className={active("/instalaciones") ? "active" : ""} type="button" onClick={() => go("/instalaciones")}>Instalaciones</button>
         <button className={active("/galeria") ? "active" : ""} type="button" onClick={() => go("/galeria")}>Galería</button>
         <button className={active("/contacto") ? "active" : ""} type="button" onClick={() => go("/contacto")}>Contacto</button>
-        <button className={`hotel-navbar__profile ${active("/login") ? "active" : ""}`} type="button" onClick={() => go("/login")}>
+        <button className={`hotel-navbar__profile ${active("/perfil") || active("/login") ? "active" : ""}`} type="button" onClick={() => go(profilePath)}>
           <span className="profile-icon">♙</span>
           {user ? "Mi perfil" : "Perfil / Ingresar"}
         </button>
