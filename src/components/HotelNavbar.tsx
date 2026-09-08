@@ -14,6 +14,15 @@ function HotelNavbar() {
     navigate(path);
   };
 
+  const goToReservation = () => {
+    setOpen(false);
+    if (!authRepository.isAuthenticated()) {
+      navigate("/login?redirect=/reservar");
+      return;
+    }
+    navigate("/reservar");
+  };
+
   const active = (path: string) => location.pathname === path;
   const profilePath = user ? "/perfil" : "/login";
 
@@ -35,7 +44,7 @@ function HotelNavbar() {
           <span className="profile-icon">♙</span>
           {user ? "Mi perfil" : "Perfil / Ingresar"}
         </button>
-        <button className="hotel-navbar__reserve" type="button" onClick={() => go("/reservar")}>Reservar</button>
+        <button className="hotel-navbar__reserve" type="button" onClick={goToReservation}>Reservar</button>
       </div>
     </nav>
   );
