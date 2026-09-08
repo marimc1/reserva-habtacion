@@ -25,6 +25,7 @@ function HotelNavbar() {
         <button className={active("/") ? "active" : ""} type="button" onClick={() => go("/")}>Inicio</button>
         <button className={active("/habitaciones") ? "active" : ""} type="button" onClick={() => go("/habitaciones")}>Habitaciones</button>
         <button className={active("/servicios") ? "active" : ""} type="button" onClick={() => go("/servicios")}>Servicios</button>
+        <button className={active("/instalaciones") ? "active" : ""} type="button" onClick={() => go("/instalaciones")}>Instalaciones</button>
         <button className={active("/galeria") ? "active" : ""} type="button" onClick={() => go("/galeria")}>Galería</button>
         <button className={active("/contacto") ? "active" : ""} type="button" onClick={() => go("/contacto")}>Contacto</button>
         <button className="hotel-navbar__reserve" type="button" onClick={() => go("/reservar")}>Reservar</button>
