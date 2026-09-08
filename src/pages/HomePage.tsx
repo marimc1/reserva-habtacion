@@ -1,28 +1,14 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authRepository } from "../repositories/authRepository";
-import standardRoomImage from "../assets/home/habitacion-estandar.svg";
-import familyRoomImage from "../assets/home/habitacion-familiar.svg";
-import suiteRoomImage from "../assets/home/habitacion-suite.svg";
+import { getReservations, hasReservationConflict, roomInventory } from "../data/rooms";
 import "./HomePage.css";
 
-type Room = {
-  id: string;
-  name: string;
-  description: string;
-  pricePerNight: number;
-  capacity: number;
-  image: string;
-  unavailableDates: Array<{ from: string; to: string }>;
-};
+const today = new Date().toISOString().slice(0, 10);
 
-const rooms: Room[] = [
-  { id: "standard", name: "Habitación Estándar", description: "Cómoda habitación para viajes cortos, con cama doble, baño privado y ambiente cálido para descansar.", pricePerNight: 55, capacity: 2, image: standardRoomImage, unavailableDates: [{ from: "2026-09-05", to: "2026-09-08" }] },
-  { id: "family", name: "Habitación Familiar", description: "Espacio amplio con dos camas, ideal para familias o grupos que buscan comodidad durante su estancia.", pricePerNight: 95, capacity: 4, image: familyRoomImage, unavailableDates: [{ from: "2026-09-12", to: "2026-09-14" }] },
-  { id: "suite", name: "Suite Premium", description: "Suite elegante con cama king, sala de descanso y detalles exclusivos para una experiencia superior.", pricePerNight: 145, capacity: 6, image: suiteRoomImage, unavailableDates: [{ from: "2026-10-01", to: "2026-10-04" }] },
-];
-
-const datesOverlap = (start: string, end: string, bookedStart: string, bookedEnd: string) => start < bookedEnd && end > bookedStart;
+function datesOverlap(start: string, end: string, bookedStart: string, bookedEnd: string) {
+  return start < bookedEnd && end > bookedStart;
+}
 
 function HomePage() {
   const navigate = useNavigate();
@@ -30,110 +16,158 @@ function HomePage() {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState("1");
-  const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
-  const [searchMessage, setSearchMessage] = useState("Completa los datos y pulsa Buscar para ver habitaciones disponibles.");
+  const [searchMessage, setSearchMessage] = useState("Selecciona tus fechas y cantidad de huéspedes para comenzar.");
   const [hasSearched, setHasSearched] = useState(false);
+  const [mobileMenu, setMobileMenu] = useState(false);
+
+  const availableRooms = useMemo(() => {
+    if (!hasSearched || !checkIn || !checkOut || checkOut <= checkIn) return [];
+    const requestedGuests = Number(guests);
+    return roomInventory.filter((room) =>
+      room.status === "Disponible" &&
+      room.capacity >= requestedGuests &&
+      checkIn >= room.availableFrom &&
+      checkOut <= room.availableTo &&
+      !hasReservationConflict(room.number, checkIn, checkOut) &&
+      !datesOverlap(checkIn, checkOut, room.availableFrom, room.availableTo) === false
+    );
+  }, [checkIn, checkOut, guests, hasSearched]);
+
+  const availableCount = roomInventory.filter((room) => room.status === "Disponible").length;
+  const occupiedCount = roomInventory.filter((room) => room.status === "Ocupada").length;
+  const reservationCount = getReservations().length;
 
   const handleLogout = () => {
     authRepository.logout();
     navigate("/login", { replace: true });
   };
 
-  const handleRoomSearch = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setHasSearched(true);
 
     if (!checkIn || !checkOut) {
-      setAvailableRooms([]);
-      setSearchMessage("Marca la fecha de check-in y check-out para buscar habitaciones.");
+      setSearchMessage("Completa la fecha de entrada y salida.");
       return;
     }
-
+    if (checkIn < today) {
+      setSearchMessage("La fecha de entrada no puede ser anterior a hoy.");
+      return;
+    }
     if (checkOut <= checkIn) {
-      setAvailableRooms([]);
-      setSearchMessage("La fecha de check-out debe ser posterior al check-in.");
+      setSearchMessage("La fecha de salida debe ser posterior a la fecha de entrada.");
       return;
     }
 
-    const requestedGuests = Number(guests);
-    const matchingRooms = rooms.filter((room) => room.capacity >= requestedGuests && !room.unavailableDates.some((range) => datesOverlap(checkIn, checkOut, range.from, range.to)));
-    setAvailableRooms(matchingRooms);
-    setSearchMessage(matchingRooms.length > 0 ? `${matchingRooms.length} habitación${matchingRooms.length === 1 ? "" : "es"} disponible${matchingRooms.length === 1 ? "" : "s"} para tu solicitud.` : "No hay habitaciones disponibles con esas fechas y cantidad de huéspedes.");
+    const count = roomInventory.filter((room) =>
+      room.status === "Disponible" &&
+      room.capacity >= Number(guests) &&
+      checkIn >= room.availableFrom &&
+      checkOut <= room.availableTo &&
+      !hasReservationConflict(room.number, checkIn, checkOut)
+    ).length;
+
+    setSearchMessage(count ? `${count} habitación${count === 1 ? "" : "es"} disponible${count === 1 ? "" : "s"} para tu estancia.` : "No encontramos habitaciones para esas fechas. Prueba con otras fechas o menos huéspedes.");
+    document.getElementById("reservar")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
     <main className="home-page">
       <nav className="home-navbar" aria-label="Navegación principal">
-        <a className="home-navbar__brand" href="#inicio">Hotel Rolex</a>
-        <ul className="home-navbar__menu">
-          <li><a className="home-navbar__link" href="#inicio">Inicio</a></li>
-          <li><button type="button" className="home-navbar__link" onClick={() => navigate("/habitaciones")}>Habitaciones</button></li>
-          <li><a className="home-navbar__link" href="#servicios">Servicios</a></li>
-          <li><a className="home-navbar__link" href="#galeria">Galería</a></li>
-          <li><a className="home-navbar__link" href="#contacto">Contacto</a></li>
-          <li><a className="home-navbar__link home-navbar__reserve" href="#reservar">Reservar</a></li>
-        </ul>
+        <button className="home-navbar__brand" type="button" onClick={() => navigate("/")}>Hotel Rolex</button>
+        <button className="home-navbar__toggle" type="button" onClick={() => setMobileMenu((value) => !value)} aria-label="Abrir menú">☰</button>
+        <div className={`home-navbar__menu ${mobileMenu ? "is-open" : ""}`}>
+          <a href="#inicio" onClick={() => setMobileMenu(false)}>Inicio</a>
+          <button type="button" onClick={() => navigate("/habitaciones")}>Habitaciones</button>
+          <a href="#servicios" onClick={() => setMobileMenu(false)}>Servicios</a>
+          <a href="#experiencia" onClick={() => setMobileMenu(false)}>Experiencia</a>
+          <a href="#contacto" onClick={() => setMobileMenu(false)}>Contacto</a>
+          <button className="home-navbar__reserve" type="button" onClick={() => navigate("/reservar")}>Reservar</button>
+        </div>
       </nav>
 
-      <header id="inicio" className="home-header">
-        <div className="home-header__content">
-          <p className="home-header__eyebrow">Bienvenido a Hotel Rolex</p>
-          <h1>Descansa y disfruta tu estancia.</h1>
-          <a className="home-header__button" href="#reservar">Reservar ahora</a>
+      <header id="inicio" className="home-hero">
+        <div className="home-hero__content">
+          <span className="eyebrow">HOTEL ROLEX · SUCRE</span>
+          <h1>Tu descanso empieza <em>aquí.</em></h1>
+          <p>Un espacio pensado para que disfrutes cada momento de tu estancia con comodidad, tranquilidad y atención cercana.</p>
+          <div className="hero-actions">
+            <button type="button" onClick={() => navigate("/habitaciones")}>Explorar habitaciones <span>→</span></button>
+            <a href="#experiencia">Conocer el hotel</a>
+          </div>
+          <div className="hero-trust"><span>★ 4.9</span><span>•</span><span>10 habitaciones</span><span>•</span><span>Atención personalizada</span></div>
         </div>
-        <div className="home-header__image-placeholder" aria-label="Espacio reservado para imagen principal del hotel"><span>Imagen del hotel</span></div>
+        <div className="home-hero__visual">
+          <img src={roomInventory.find((room) => room.type === "Suite Premium")?.image} alt="Suite Premium de Hotel Rolex" />
+          <div className="hero-floating-card"><span>DESDE</span><strong>$55</strong><small>por noche</small></div>
+          <div className="hero-floating-label">Suite Premium<br /><small>La experiencia Rolex</small></div>
+        </div>
       </header>
 
-      <section className="home-page__content">
-        <h2>Página principal</h2>
-        {user ? (
-          <>
-            <p>Bienvenido, {user.name}</p>
-            <p>Carnet: {user.carnet}</p>
-            <p>Rol: {user.role}</p>
-            <button type="button" onClick={handleLogout}>Cerrar sesión</button>
-          </>
-        ) : <p>No existe una sesión activa.</p>}
+      <section className="home-stats" aria-label="Información del hotel">
+        <div><strong>10</strong><span>Habitaciones</span></div>
+        <div><strong>3</strong><span>Tipos de habitación</span></div>
+        <div><strong>6</strong><span>Huéspedes máx.</span></div>
+        <div><strong>24/7</strong><span>Atención</span></div>
       </section>
 
-      <section id="habitaciones" className="home-section">
-        <h2>Habitaciones</h2>
-        <p>Consulta la información detallada, disponibilidad y características de cada habitación.</p>
-        <button type="button" onClick={() => navigate("/habitaciones")}>Ver todas las habitaciones</button>
-      </section>
+      {user && (
+        <section className="welcome-strip">
+          <div><span>SESION ACTIVA</span><strong>Bienvenido/a, {user.name}</strong><small>Rol: {user.role} · Carnet: {user.carnet}</small></div>
+          <button type="button" onClick={handleLogout}>Cerrar sesión</button>
+        </section>
+      )}
 
-      <section id="servicios" className="home-section"><h2>Servicios</h2><p>Disfruta de los servicios que Hotel Rolex tiene preparados para ti.</p></section>
-      <section id="galeria" className="home-section"><h2>Galería</h2><p>Conoce nuestras instalaciones.</p></section>
-
-      <section id="reservar" className="home-section home-reservation">
-        <div className="home-reservation__intro">
-          <h2>Reservar habitación</h2>
-          <p>Selecciona tus fechas, indica cuántos huéspedes se quedarán y encuentra la mejor habitación disponible.</p>
+      <section id="habitaciones" className="home-section rooms-preview">
+        <div className="section-heading"><div><span>DESCUBRE TU ESPACIO</span><h2>Habitaciones para cada estancia</h2></div><button type="button" onClick={() => navigate("/habitaciones")}>Ver inventario completo →</button></div>
+        <div className="featured-grid">
+          {[
+            { type: "Estándar", label: "Esencial", description: "Comodidad y practicidad para una estancia tranquila.", price: 55 },
+            { type: "Familiar", label: "Espaciosa", description: "Más espacio para compartir momentos especiales.", price: 95 },
+            { type: "Suite Premium", label: "Exclusiva", description: "Una experiencia superior con área de descanso.", price: 145 },
+          ].map((item) => {
+            const room = roomInventory.find((entry) => entry.type === item.type);
+            return <article className="featured-room" key={item.type}><div className="featured-room__image"><img src={room?.image} alt={item.type} /><span>{item.label}</span></div><div className="featured-room__body"><small>HASTA {room?.capacity} HUÉSPEDES</small><h3>{item.type}</h3><p>{item.description}</p><div><strong>${item.price}</strong><span>/ noche</span><button type="button" onClick={() => navigate(`/reservar?room=${room?.number || ""}`)}>Reservar →</button></div></div></article>;
+          })}
         </div>
+      </section>
 
-        <form className="reservation-search" aria-label="Buscar habitación" onSubmit={handleRoomSearch}>
-          <label className="reservation-search__field" htmlFor="check-in"><span>Check-in</span><input id="check-in" name="check-in" type="date" value={checkIn} onChange={(event) => setCheckIn(event.target.value)} required /></label>
-          <label className="reservation-search__field" htmlFor="check-out"><span>Check-out</span><input id="check-out" name="check-out" type="date" value={checkOut} onChange={(event) => setCheckOut(event.target.value)} required /></label>
-          <label className="reservation-search__field" htmlFor="guests"><span>Huéspedes</span><select id="guests" name="guests" value={guests} onChange={(event) => setGuests(event.target.value)}><option value="1">1 persona</option><option value="2">2 personas</option><option value="3">3 personas</option><option value="4">4 personas</option><option value="5">5 personas</option><option value="6">6 personas</option></select></label>
-          <button className="reservation-search__button" type="submit">Buscar</button>
+      <section id="servicios" className="home-section services-section">
+        <div className="section-heading centered"><span>TODO LO QUE NECESITAS</span><h2>Servicios pensados para ti</h2><p>Pequeños detalles que hacen que una estancia se sienta especial.</p></div>
+        <div className="services-grid">
+          <article><span>01</span><div><h3>Wi-Fi incluido</h3><p>Conexión para mantenerte comunicado durante tu estancia.</p></div></article>
+          <article><span>02</span><div><h3>Baño privado</h3><p>Espacios cómodos y preparados para tu descanso.</p></div></article>
+          <article><span>03</span><div><h3>Aire acondicionado</h3><p>Ambiente agradable para disfrutar en cualquier momento.</p></div></article>
+          <article><span>04</span><div><h3>Atención cercana</h3><p>Estamos aquí para ayudarte antes y durante tu visita.</p></div></article>
+          <article><span>05</span><div><h3>Minibar</h3><p>Disponible en nuestras habitaciones familiares y suites.</p></div></article>
+          <article><span>06</span><div><h3>Reserva sencilla</h3><p>Consulta disponibilidad y confirma en pocos pasos.</p></div></article>
+        </div>
+      </section>
+
+      <section id="experiencia" className="home-experience">
+        <div className="experience-image"><img src={roomInventory[4].image} alt="Habitación Familiar" /></div>
+        <div className="experience-content"><span>LA EXPERIENCIA ROLEX</span><h2>Un lugar para bajar el ritmo y disfrutar.</h2><p>Desde una habitación práctica hasta una suite amplia, nuestro objetivo es ofrecerte una experiencia sencilla, cómoda y memorable.</p><div className="experience-points"><span>✓ Espacios cómodos</span><span>✓ Ubicación pensada para descansar</span><span>✓ Reservas rápidas y claras</span><span>✓ Información de disponibilidad</span></div><button type="button" onClick={() => navigate("/habitaciones")}>Conocer todas las habitaciones →</button></div>
+      </section>
+
+      <section id="reservar" className="home-section booking-section">
+        <div className="section-heading centered"><span>RESERVA TU ESTANCIA</span><h2>Encuentra disponibilidad</h2><p>Indica tus fechas y nosotros te mostramos las habitaciones que puedes reservar.</p></div>
+        <form className="booking-form" onSubmit={handleSearch}>
+          <label><span>Entrada</span><input type="date" min={today} value={checkIn} onChange={(e) => setCheckIn(e.target.value)} required /></label>
+          <label><span>Salida</span><input type="date" min={checkIn || today} value={checkOut} onChange={(e) => setCheckOut(e.target.value)} required /></label>
+          <label><span>Huéspedes</span><select value={guests} onChange={(e) => setGuests(e.target.value)}>{[1,2,3,4,5,6].map((value) => <option key={value} value={value}>{value} {value === 1 ? "persona" : "personas"}</option>)}</select></label>
+          <button type="submit">Buscar habitaciones <span>→</span></button>
         </form>
-
-        <div className="reservation-results" aria-live="polite">
-          <p className="reservation-results__message">{searchMessage}</p>
-          {hasSearched && availableRooms.length > 0 && (
-            <div className="room-cards">
-              {availableRooms.map((room) => (
-                <article className="room-card" key={room.id}>
-                  <div className="room-card__image-column"><img src={room.image} alt={`Imagen de ${room.name}`} /><strong>${room.pricePerNight} / noche</strong></div>
-                  <div className="room-card__content"><span>Hasta {room.capacity} huéspedes</span><h3>{room.name}</h3><p>{room.description}</p><button className="room-card__button" type="button" onClick={() => navigate("/habitaciones")}>Ver detalles</button></div>
-                </article>
-              ))}
-            </div>
-          )}
-        </div>
+        <div className="booking-message">{hasSearched && availableRooms.length > 0 ? <>{searchMessage}<div className="booking-results">{availableRooms.slice(0, 3).map((room) => <button type="button" key={room.number} onClick={() => navigate(`/reservar?room=${room.number}`)}><span>#{room.number}</span><strong>{room.type}</strong><small>${room.price}/noche · hasta {room.capacity}</small><b>Reservar →</b></button>)}</div></> : <p>{searchMessage}</p>}</div>
       </section>
 
-      <section id="contacto" className="home-section"><h2>Contacto</h2><p>Estamos disponibles para ayudarte con tu reserva.</p></section>
+      <section className="home-quick-info"><div><span>ESTADO ACTUAL</span><strong>{availableCount} habitaciones disponibles</strong><small>{occupiedCount} ocupadas · {roomInventory.length - availableCount - occupiedCount} en mantenimiento</small></div><div><span>RESERVAS</span><strong>{reservationCount} registrada{reservationCount === 1 ? "" : "s"}</strong><small>Guardadas localmente en este navegador</small></div><button type="button" onClick={() => navigate("/habitaciones")}>Ver sistema completo →</button></section>
+
+      <section id="contacto" className="home-contact">
+        <div><span>¿NECESITAS AYUDA?</span><h2>Estamos para ayudarte.</h2><p>Si tienes dudas sobre habitaciones, disponibilidad o reservas, puedes consultar el sistema del hotel.</p></div>
+        <div className="contact-cards"><div><small>HORARIO</small><strong>Atención 24/7</strong></div><div><small>RESERVAS</small><strong>Online · Siempre disponible</strong></div><div><small>UBICACIÓN</small><strong>Sucre, Bolivia</strong></div></div>
+      </section>
+
+      <footer className="home-footer"><div><strong>Hotel Rolex</strong><p>Hospitalidad, comodidad y una estancia inolvidable.</p></div><div><span>Explora</span><button onClick={() => navigate("/habitaciones")}>Habitaciones</button><button onClick={() => navigate("/reservar")}>Reservar</button></div><div><span>Sistema</span><small>Inventario · Disponibilidad · Reservas</small></div><div><span>© 2026 Hotel Rolex</span><small>Proyecto de sistema de reservas</small></div></footer>
     </main>
   );
 }
