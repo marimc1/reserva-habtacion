@@ -1,0 +1,22 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import HotelNavbar from "../components/HotelNavbar";
+import HotelFooter from "../components/HotelFooter";
+import "./ServicesPage.css";
+
+const services = [
+  ["01", "Wi-Fi de cortesía", "Conexión disponible para que puedas trabajar, estudiar o comunicarte durante tu estancia.", "Disponible en habitaciones y áreas comunes."],
+  ["02", "Baño privado", "Habitaciones equipadas con espacios privados y preparados para el uso diario.", "Incluido en todas las categorías."],
+  ["03", "Aire acondicionado", "Control de temperatura para una experiencia más cómoda.", "Disponible según la categoría de habitación."],
+  ["04", "Minibar", "Una opción práctica para quienes desean contar con bebidas y productos durante su estancia.", "Disponible en habitaciones familiares y suites."],
+  ["05", "Atención 24/7", "El sistema y la información de reservas están disponibles en cualquier momento.", "Servicio continuo."],
+  ["06", "Reserva online", "Consulta habitaciones, fechas, capacidad y precios antes de confirmar.", "Proceso digital en pocos pasos."],
+];
+
+function ServicesPage() {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState<number | null>(0);
+  return <main className="services-page"><HotelNavbar /><header className="services-hero"><span>HOTEL ROLEX · SERVICIOS</span><h1>Todo preparado para una estancia tranquila.</h1><p>Conoce los servicios disponibles y consulta qué incluye cada categoría antes de reservar.</p></header><section className="services-content"><div className="services-intro"><div><span>NUESTROS SERVICIOS</span><h2>Comodidad sin complicaciones.</h2></div><p>La información está organizada para que puedas consultar cada servicio de forma rápida.</p></div><div className="services-list">{services.map((service, index) => <article className={open === index ? "open" : ""} key={service[0]}><button type="button" onClick={() => setOpen(open === index ? null : index)}><span>{service[0]}</span><strong>{service[1]}</strong><b>{open === index ? "−" : "+"}</b></button>{open === index && <div className="service-detail"><p>{service[2]}</p><small>{service[3]}</small></div>}</article>)}</div><div className="services-bottom"><div><span>¿LISTA/O PARA ELEGIR?</span><h2>Compara habitaciones y encuentra la adecuada.</h2></div><button type="button" onClick={() => navigate("/habitaciones")}>Ver habitaciones →</button></div></section><HotelFooter /></main>;
+}
+
+export default ServicesPage;
