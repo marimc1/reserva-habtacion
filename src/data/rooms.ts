@@ -3,6 +3,8 @@ import familyRoomImage from "../assets/home/habitacion-familiar.svg";
 import suiteRoomImage from "../assets/home/habitacion-suite.svg";
 
 export type RoomStatus = "Disponible" | "Ocupada" | "Mantenimiento";
+export type PaymentMethod = "Tarjeta" | "Transferencia bancaria" | "Efectivo";
+export type PaymentStatus = "Pagado" | "Pendiente";
 
 export type Room = {
   number: string;
@@ -48,53 +50,42 @@ export type Reservation = {
   total: number;
   createdAt: string;
   status?: ReservationStatus;
+  paymentMethod?: PaymentMethod;
+  paymentStatus?: PaymentStatus;
+  paymentReference?: string;
 };
 
 const STORAGE_KEY = "hotel-rolex-reservations";
 
 export function getReservations(): Reservation[] {
   try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]") as Array<Reservation & { status?: ReservationStatus }>;
-    return parsed.map((reservation) => ({ ...reservation, status: reservation.status || "Activa" }));
+    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]") as Array<Reservation & { status?: ReservationStatus; paymentStatus?: PaymentStatus }>;
+    return parsed.map((reservation) => ({ ...reservation, status: reservation.status || "Activa", paymentStatus: reservation.paymentStatus || "Pendiente" }));
   } catch {
     return [];
   }
 }
 
 export function saveReservation(reservation: Reservation): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([...getReservations(), { ...reservation, status: reservation.status || "Activa" }]));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...getReservations(), { ...reservation, status: reservation.status || "Activa", paymentStatus: reservation.paymentStatus || "Pendiente" }]));
 }
 
 export function hasReservationConflict(roomNumber: string, checkIn: string, checkOut: string): boolean {
-  return getReservations().some((reservation) =>
-    reservation.status !== "Cancelada" &&
-    reservation.roomNumber === roomNumber &&
-    checkIn < reservation.checkOut &&
-    checkOut > reservation.checkIn
-  );
+  return getReservations().some((reservation) => reservation.status !== "Cancelada" && reservation.roomNumber === roomNumber && checkIn < reservation.checkOut && checkOut > reservation.checkIn);
 }
 
-export function cancelReservation(
-  reservationId: string,
-  user: { id: string; name: string; carnet: string }
-): boolean {
+export function cancelReservation(reservationId: string, user: { id: string; name: string; carnet: string }): boolean {
   const reservations = getReservations();
   const normalize = (value: string) => value.trim().toLowerCase();
   let cancelled = false;
-
   const updated = reservations.map((reservation) => {
-    const belongsToUser = reservation.userId
-      ? reservation.userId === user.id
-      : reservation.document.trim() === user.carnet.trim() && normalize(reservation.guestName) === normalize(user.name);
-
+    const belongsToUser = reservation.userId ? reservation.userId === user.id : reservation.document.trim() === user.carnet.trim() && normalize(reservation.guestName) === normalize(user.name);
     if (reservation.id === reservationId && belongsToUser && reservation.status !== "Cancelada") {
       cancelled = true;
       return { ...reservation, status: "Cancelada" as const };
     }
-
     return reservation;
   });
-
   if (cancelled) localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   return cancelled;
 }
