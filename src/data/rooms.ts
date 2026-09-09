@@ -4,21 +4,14 @@ import suiteRoomImage from "../assets/home/habitacion-suite.svg";
 
 export type RoomStatus = "Disponible" | "Ocupada" | "Mantenimiento";
 export type PaymentMethod = "Tarjeta" | "Transferencia bancaria" | "Efectivo";
-export type PaymentStatus = "Pagado" | "Pendiente";
+export type PaymentStatus = "Pagado" | "Pendiente" | "Pendiente de verificación" | "Rechazado";
+export type ReservationStatus = "Activa" | "Cancelada";
+export type OperationStatus = "Reservada" | "Check-in" | "Check-out";
+export type PromotionCode = "FINDE10" | "FAMILIA15" | "SUITE12";
 
 export type Room = {
-  number: string;
-  type: "Estándar" | "Familiar" | "Suite Premium";
-  capacity: number;
-  beds: string;
-  price: number;
-  floor: number;
-  status: RoomStatus;
-  image: string;
-  description: string;
-  amenities: string[];
-  availableFrom: string;
-  availableTo: string;
+  number: string; type: "Estándar" | "Familiar" | "Suite Premium"; capacity: number; beds: string; price: number; floor: number;
+  status: RoomStatus; image: string; description: string; amenities: string[]; availableFrom: string; availableTo: string;
 };
 
 export const roomInventory: Room[] = [
@@ -34,40 +27,24 @@ export const roomInventory: Room[] = [
   { number: "302", type: "Suite Premium", capacity: 6, beds: "1 cama king + sofá cama", price: 145, floor: 3, status: "Ocupada", image: suiteRoomImage, description: "Suite de mayor capacidad para grupos o familias.", amenities: ["Baño privado", "Wi-Fi", "TV", "Minibar", "Sala de estar"], availableFrom: "2026-09-22", availableTo: "2026-12-31" },
 ];
 
-export type ReservationStatus = "Activa" | "Cancelada";
-
 export type Reservation = {
-  id: string;
-  userId?: string;
-  roomNumber: string;
-  guestName: string;
-  document: string;
-  phone: string;
-  email: string;
-  checkIn: string;
-  checkOut: string;
-  guests: number;
-  total: number;
-  createdAt: string;
-  status?: ReservationStatus;
-  paymentMethod?: PaymentMethod;
-  paymentStatus?: PaymentStatus;
-  paymentReference?: string;
+  id: string; userId?: string; roomNumber: string; guestName: string; document: string; phone: string; email: string;
+  checkIn: string; checkOut: string; guests: number; total: number; subtotal?: number; discount?: number; promotionCode?: PromotionCode;
+  createdAt: string; status?: ReservationStatus; operationStatus?: OperationStatus; paymentMethod?: PaymentMethod;
+  paymentStatus?: PaymentStatus; paymentReference?: string;
 };
 
 const STORAGE_KEY = "hotel-rolex-reservations";
 
 export function getReservations(): Reservation[] {
   try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]") as Array<Reservation & { status?: ReservationStatus; paymentStatus?: PaymentStatus }>;
-    return parsed.map((reservation) => ({ ...reservation, status: reservation.status || "Activa", paymentStatus: reservation.paymentStatus || "Pendiente" }));
-  } catch {
-    return [];
-  }
+    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]") as Reservation[];
+    return parsed.map((reservation) => ({ ...reservation, status: reservation.status || "Activa", operationStatus: reservation.operationStatus || "Reservada", paymentStatus: reservation.paymentStatus || "Pendiente" }));
+  } catch { return []; }
 }
 
 export function saveReservation(reservation: Reservation): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([...getReservations(), { ...reservation, status: reservation.status || "Activa", paymentStatus: reservation.paymentStatus || "Pendiente" }]));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...getReservations(), { ...reservation, status: reservation.status || "Activa", operationStatus: reservation.operationStatus || "Reservada", paymentStatus: reservation.paymentStatus || "Pendiente" }]));
 }
 
 export function hasReservationConflict(roomNumber: string, checkIn: string, checkOut: string): boolean {
@@ -75,17 +52,11 @@ export function hasReservationConflict(roomNumber: string, checkIn: string, chec
 }
 
 export function cancelReservation(reservationId: string, user: { id: string; name: string; carnet: string }): boolean {
-  const reservations = getReservations();
-  const normalize = (value: string) => value.trim().toLowerCase();
-  let cancelled = false;
+  const reservations = getReservations(); const normalize = (value: string) => value.trim().toLowerCase(); let cancelled = false;
   const updated = reservations.map((reservation) => {
     const belongsToUser = reservation.userId ? reservation.userId === user.id : reservation.document.trim() === user.carnet.trim() && normalize(reservation.guestName) === normalize(user.name);
-    if (reservation.id === reservationId && belongsToUser && reservation.status !== "Cancelada") {
-      cancelled = true;
-      return { ...reservation, status: "Cancelada" as const };
-    }
+    if (reservation.id === reservationId && belongsToUser && reservation.status !== "Cancelada") { cancelled = true; return { ...reservation, status: "Cancelada" as const }; }
     return reservation;
   });
-  if (cancelled) localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  return cancelled;
+  if (cancelled) localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)); return cancelled;
 }
