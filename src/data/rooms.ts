@@ -32,8 +32,11 @@ export const roomInventory: Room[] = [
   { number: "302", type: "Suite Premium", capacity: 6, beds: "1 cama king + sofá cama", price: 145, floor: 3, status: "Ocupada", image: suiteRoomImage, description: "Suite de mayor capacidad para grupos o familias.", amenities: ["Baño privado", "Wi-Fi", "TV", "Minibar", "Sala de estar"], availableFrom: "2026-09-22", availableTo: "2026-12-31" },
 ];
 
+export type ReservationStatus = "Activa" | "Cancelada";
+
 export type Reservation = {
   id: string;
+  userId?: string;
   roomNumber: string;
   guestName: string;
   document: string;
@@ -44,13 +47,15 @@ export type Reservation = {
   guests: number;
   total: number;
   createdAt: string;
+  status: ReservationStatus;
 };
 
 const STORAGE_KEY = "hotel-rolex-reservations";
 
 export function getReservations(): Reservation[] {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]") as Reservation[];
+    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]") as Array<Reservation & { status?: ReservationStatus }>;
+    return parsed.map((reservation) => ({ ...reservation, status: reservation.status || "Activa" }));
   } catch {
     return [];
   }
@@ -62,8 +67,34 @@ export function saveReservation(reservation: Reservation): void {
 
 export function hasReservationConflict(roomNumber: string, checkIn: string, checkOut: string): boolean {
   return getReservations().some((reservation) =>
+    reservation.status !== "Cancelada" &&
     reservation.roomNumber === roomNumber &&
     checkIn < reservation.checkOut &&
     checkOut > reservation.checkIn
   );
+}
+
+export function cancelReservation(
+  reservationId: string,
+  user: { id: string; name: string; carnet: string }
+): boolean {
+  const reservations = getReservations();
+  const normalize = (value: string) => value.trim().toLowerCase();
+  let cancelled = false;
+
+  const updated = reservations.map((reservation) => {
+    const belongsToUser = reservation.userId
+      ? reservation.userId === user.id
+      : reservation.document.trim() === user.carnet.trim() && normalize(reservation.guestName) === normalize(user.name);
+
+    if (reservation.id === reservationId && belongsToUser && reservation.status !== "Cancelada") {
+      cancelled = true;
+      return { ...reservation, status: "Cancelada" as const };
+    }
+
+    return reservation;
+  });
+
+  if (cancelled) localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  return cancelled;
 }
