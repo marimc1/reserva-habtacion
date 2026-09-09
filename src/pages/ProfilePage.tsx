@@ -1,30 +1,43 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import HotelNavbar from "../components/HotelNavbar";
 import HotelFooter from "../components/HotelFooter";
-import { getReservations } from "../data/rooms";
+import { cancelReservation, getReservations } from "../data/rooms";
 import { authRepository } from "../repositories/authRepository";
 import "./ProfilePage.css";
 
 function ProfilePage() {
   const navigate = useNavigate();
   const user = authRepository.getCurrentUser();
+  const [refresh, setRefresh] = useState(0);
+  const [reservationToCancel, setReservationToCancel] = useState<string | null>(null);
+  const [notice, setNotice] = useState("");
 
   const reservations = useMemo(() => {
     if (!user) return [];
     const normalize = (value: string) => value.trim().toLowerCase();
     return getReservations().filter(
       (reservation) =>
-        normalize(reservation.guestName) === normalize(user.name) ||
-        reservation.document.trim() === user.carnet.trim()
+        reservation.userId === user.id ||
+        (!reservation.userId && normalize(reservation.guestName) === normalize(user.name) && reservation.document.trim() === user.carnet.trim())
     );
-  }, [user]);
+  }, [user, refresh]);
 
   if (!user) return <Navigate to="/login" replace />;
+
+  const activeReservations = reservations.filter((reservation) => reservation.status !== "Cancelada");
 
   const handleLogout = () => {
     authRepository.logout();
     navigate("/", { replace: true });
+  };
+
+  const handleCancelReservation = () => {
+    if (!reservationToCancel) return;
+    const cancelled = cancelReservation(reservationToCancel, user);
+    setReservationToCancel(null);
+    setNotice(cancelled ? "La reserva fue cancelada correctamente. La habitación vuelve a estar disponible para esas fechas." : "No se pudo cancelar la reserva.");
+    setRefresh((value) => value + 1);
   };
 
   return (
@@ -35,7 +48,7 @@ function ProfilePage() {
         <div>
           <span>HOTEL ROLEX · CUENTA</span>
           <h1>Mi perfil.</h1>
-          <p>Consulta tus datos y revisa las reservas asociadas a tu cuenta.</p>
+          <p>Consulta tus datos, reservas activas y el historial de tus estancias.</p>
         </div>
         <div className="profile-hero__badge">
           <strong>{user.name.charAt(0).toUpperCase()}</strong>
@@ -60,10 +73,10 @@ function ProfilePage() {
           </article>
 
           <article className="profile-card profile-card--summary">
-            <span>RESUMEN</span>
-            <strong>{reservations.length}</strong>
-            <h2>{reservations.length === 1 ? "Reserva registrada" : "Reservas registradas"}</h2>
-            <p>Las reservas realizadas desde este navegador aparecerán aquí cuando coincidan con tus datos.</p>
+            <span>RESERVAS ACTIVAS</span>
+            <strong>{activeReservations.length}</strong>
+            <h2>{activeReservations.length === 1 ? "Reserva activa" : "Reservas activas"}</h2>
+            <p>Tus reservas confirmadas aparecen aquí y puedes cancelarlas si cometiste un error.</p>
           </article>
         </div>
 
@@ -76,6 +89,8 @@ function ProfilePage() {
             <button type="button" onClick={() => navigate("/habitaciones")}>Buscar habitación →</button>
           </div>
 
+          {notice && <div className="profile-notice">✓ {notice}</div>}
+
           {reservations.length === 0 ? (
             <div className="profile-empty">
               <div>□</div>
@@ -86,18 +101,42 @@ function ProfilePage() {
           ) : (
             <div className="profile-reservation-list">
               {reservations.map((reservation) => (
-                <article className="profile-reservation" key={reservation.id}>
+                <article className={`profile-reservation ${reservation.status === "Cancelada" ? "profile-reservation--cancelled" : ""}`} key={reservation.id}>
                   <div><small>CÓDIGO</small><strong>{reservation.id}</strong></div>
                   <div><small>HABITACIÓN</small><strong>#{reservation.roomNumber}</strong></div>
                   <div><small>ESTANCIA</small><strong>{reservation.checkIn} → {reservation.checkOut}</strong></div>
                   <div><small>HUÉSPEDES</small><strong>{reservation.guests}</strong></div>
                   <div><small>TOTAL</small><strong>${reservation.total}</strong></div>
+                  <div className="profile-reservation__status">
+                    <small>ESTADO</small>
+                    <strong>{reservation.status === "Cancelada" ? "Cancelada" : "Activa"}</strong>
+                  </div>
+                  {reservation.status !== "Cancelada" && (
+                    <button className="profile-cancel" type="button" onClick={() => setReservationToCancel(reservation.id)}>
+                      Cancelar reserva
+                    </button>
+                  )}
                 </article>
               ))}
             </div>
           )}
         </section>
       </section>
+
+      {reservationToCancel && (
+        <div className="profile-modal" role="dialog" aria-modal="true" aria-labelledby="cancel-title">
+          <div className="profile-modal__card">
+            <div className="profile-modal__icon">!</div>
+            <span>CONFIRMAR CANCELACIÓN</span>
+            <h2 id="cancel-title">¿Cancelar esta reserva?</h2>
+            <p>La reserva dejará de bloquear la habitación para esas fechas. Esta acción quedará registrada en tu historial.</p>
+            <div className="profile-modal__actions">
+              <button className="profile-modal__confirm" type="button" onClick={handleCancelReservation}>Sí, cancelar reserva</button>
+              <button className="profile-modal__back" type="button" onClick={() => setReservationToCancel(null)}>Volver</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <HotelFooter />
     </main>
