@@ -47,7 +47,7 @@ export type Reservation = {
   guests: number;
   total: number;
   createdAt: string;
-  status: ReservationStatus;
+  status?: ReservationStatus;
 };
 
 const STORAGE_KEY = "hotel-rolex-reservations";
@@ -62,7 +62,7 @@ export function getReservations(): Reservation[] {
 }
 
 export function saveReservation(reservation: Reservation): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([...getReservations(), reservation]));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...getReservations(), { ...reservation, status: reservation.status || "Activa" }]));
 }
 
 export function hasReservationConflict(roomNumber: string, checkIn: string, checkOut: string): boolean {
