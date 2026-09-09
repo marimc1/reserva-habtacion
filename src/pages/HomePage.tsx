@@ -1,70 +1,9 @@
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HotelNavbar from "../components/HotelNavbar";
 import HotelFooter from "../components/HotelFooter";
-import { getReservations, roomInventory } from "../data/rooms";
+import { getReservations, hasReservationConflict } from "../data/rooms";
+import { getEffectiveRooms } from "../services/hotelService";
 import "./HomePage.css";
-
-function HomePage() {
-  const navigate = useNavigate();
-  const available = roomInventory.filter((room) => room.status === "Disponible").length;
-  const reservations = getReservations().length;
-
-  return (
-    <main className="home-page">
-      <HotelNavbar />
-      <header className="home-hero">
-        <div className="home-hero__copy">
-          <span>HOTEL ROLEX · SUCRE · BOLIVIA</span>
-          <h1>Una estancia con <em>estándar profesional.</em></h1>
-          <p>Conoce nuestras habitaciones, servicios e instalaciones desde un sistema claro, moderno y organizado.</p>
-          <div className="home-hero__actions">
-            <button type="button" onClick={() => navigate("/habitaciones")}>Explorar habitaciones →</button>
-            <button type="button" className="ghost" onClick={() => navigate("/instalaciones")}>Ver instalaciones</button>
-          </div>
-          <div className="home-metrics">
-            <div><strong>10</strong><span>habitaciones</span></div>
-            <div><strong>3</strong><span>categorías</span></div>
-            <div><strong>6</strong><span>instalaciones</span></div>
-          </div>
-        </div>
-        <div className="home-hero__card">
-          <div className="home-hero__image"><img src={roomInventory[8].image} alt="Suite Premium Hotel Rolex" /></div>
-          <div className="home-hero__cardbody">
-            <span>HABITACIÓN DESTACADA</span>
-            <h2>Suite Premium</h2>
-            <p>Hasta 6 huéspedes · desde <b>$145</b>/noche</p>
-            <button type="button" onClick={() => navigate("/habitaciones")}>Conocer habitaciones →</button>
-          </div>
-        </div>
-      </header>
-
-      <section className="home-intro">
-        <span>HOTEL ROLEX</span>
-        <h2>Todo lo que necesitas, en su propio espacio.</h2>
-        <p>El sitio está organizado por secciones para que puedas consultar la información sin repetir constantemente el botón de reserva.</p>
-      </section>
-
-      <section className="home-overview">
-        <div className="home-overview__cards">
-          <button type="button" onClick={() => navigate("/habitaciones")}><strong>01</strong><b>Habitaciones</b><small>Inventario, precios y disponibilidad</small></button>
-          <button type="button" onClick={() => navigate("/servicios")}><strong>02</strong><b>Servicios</b><small>Conoce lo que ofrece el hotel</small></button>
-          <button type="button" onClick={() => navigate("/instalaciones")}><strong>03</strong><b>Instalaciones</b><small>Fotos de los espacios del hotel</small></button>
-          <button type="button" onClick={() => navigate("/galeria")}><strong>04</strong><b>Galería</b><small>Explora las habitaciones en detalle</small></button>
-          <button type="button" onClick={() => navigate("/contacto")}><strong>05</strong><b>Contacto</b><small>Envía una consulta al hotel</small></button>
-        </div>
-      </section>
-
-      <section className="home-status">
-        <div>
-          <span>ESTADO DEL SISTEMA</span>
-          <h2>Inventario listo para consultar.</h2>
-          <p><b>{available}</b> habitaciones marcadas como disponibles · <b>{reservations}</b> reservas registradas localmente.</p>
-        </div>
-        <button type="button" onClick={() => navigate("/habitaciones")}>Ver inventario →</button>
-      </section>
-      <HotelFooter />
-    </main>
-  );
-}
-
+function HomePage(){const navigate=useNavigate();const rooms=getEffectiveRooms();const [checkIn,setCheckIn]=useState("");const [checkOut,setCheckOut]=useState("");const [guests,setGuests]=useState(1);const [searched,setSearched]=useState(false);const available=rooms.filter(r=>r.status==="Disponible").length;const reservations=getReservations().length;const results=useMemo(()=>rooms.filter(r=>r.status==="Disponible"&&(!checkIn||!checkOut||guests<=r.capacity||!searched)&&(!searched||hasReservationConflict(r.number,checkIn,checkOut)===false)),[rooms,checkIn,checkOut,guests,searched]);const search=()=>{if(checkIn&&checkOut&&checkOut>checkIn)setSearched(true)};return <main className="home-page"><HotelNavbar/><header className="home-hero"><div className="home-hero__copy"><span>HOTEL ROLEX · SUCRE · BOLIVIA</span><h1>Una estancia con <em>estándar profesional.</em></h1><p>Consulta habitaciones, disponibilidad, servicios y realiza tu reserva desde un solo lugar.</p><div className="home-hero__actions"><button onClick={()=>navigate("/habitaciones")}>Explorar habitaciones →</button><button className="ghost" onClick={()=>navigate("/instalaciones")}>Ver instalaciones</button></div><div className="home-metrics"><div><strong>{rooms.length}</strong><span>habitaciones</span></div><div><strong>3</strong><span>categorías</span></div><div><strong>6</strong><span>instalaciones</span></div></div></div><div className="home-hero__card"><div className="home-hero__image"><img src={rooms[8]?.image} alt="Suite Premium Hotel Rolex"/></div><div className="home-hero__cardbody"><span>HABITACIÓN DESTACADA</span><h2>Suite Premium</h2><p>Hasta 6 huéspedes · desde <b>$145</b>/noche</p><button onClick={()=>navigate("/habitaciones")}>Conocer habitaciones →</button></div></div></header><section className="home-search"><div><span>RESERVA RÁPIDA</span><h2>¿Cuándo quieres hospedarte?</h2></div><div className="home-search-form"><label>Entrada<input type="date" value={checkIn} onChange={e=>setCheckIn(e.target.value)}/></label><label>Salida<input type="date" value={checkOut} onChange={e=>setCheckOut(e.target.value)}/></label><label>Huéspedes<input type="number" min="1" max="6" value={guests} onChange={e=>setGuests(Number(e.target.value))}/></label><button onClick={search}>Buscar</button></div>{searched&&<p>{results.length} habitaciones cumplen los criterios. <button onClick={()=>navigate("/habitaciones")}>Ver resultados →</button></p>}</section><section className="home-intro"><span>HOTEL ROLEX</span><h2>Todo lo que necesitas, en su propio espacio.</h2><p>El sitio está organizado por secciones para consultar información, reservar y gestionar tu experiencia.</p></section><section className="home-overview"><div className="home-overview__cards"><button onClick={()=>navigate("/habitaciones")}><strong>01</strong><b>Habitaciones</b><small>Inventario, precios y disponibilidad</small></button><button onClick={()=>navigate("/servicios")}><strong>02</strong><b>Servicios</b><small>Conoce lo que ofrece el hotel</small></button><button onClick={()=>navigate("/instalaciones")}><strong>03</strong><b>Instalaciones</b><small>Espacios y comodidades</small></button><button onClick={()=>navigate("/opiniones")}><strong>04</strong><b>Opiniones</b><small>Experiencias de huéspedes</small></button><button onClick={()=>navigate("/promociones")}><strong>05</strong><b>Ofertas</b><small>Promociones especiales</small></button><button onClick={()=>navigate("/contacto")}><strong>06</strong><b>Contacto</b><small>Envía una consulta</small></button></div></section><section className="home-promos"><div><span>OFERTAS ESPECIALES</span><h2>Encuentra una tarifa para tu próxima estancia.</h2><p>Consulta nuestras promociones y descubre opciones para estancias individuales, familiares y premium.</p></div><button onClick={()=>navigate("/promociones")}>Ver promociones →</button></section><section className="home-status"><div><span>ESTADO DEL SISTEMA</span><h2>Inventario listo para consultar.</h2><p><b>{available}</b> habitaciones disponibles · <b>{reservations}</b> reservas registradas localmente.</p></div><button onClick={()=>navigate("/habitaciones")}>Ver inventario →</button></section><HotelFooter/></main>}
 export default HomePage;
