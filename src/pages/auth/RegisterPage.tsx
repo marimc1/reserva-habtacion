@@ -6,7 +6,7 @@ import "./RegisterPage.css";
 function RegisterPage() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
-  const [carnet, setCarnet] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
@@ -20,11 +20,11 @@ function RegisterPage() {
       return;
     }
 
-    const user = authRepository.register({ name, carnet, password });
+    const user = authRepository.register({ name, email, password });
 
     if (!user) {
       setError(
-        "No se pudo crear la cuenta. Comprueba los datos y verifica que el carnet no esté registrado.",
+        "No se pudo crear la cuenta. Revisa el correo y comprueba que no esté registrado.",
       );
       return;
     }
@@ -41,9 +41,8 @@ function RegisterPage() {
         <span>B&B SANTA CECILIA INC. · NUEVA CUENTA</span>
         <h1>¡Te damos la bienvenida!</h1>
         <p>
-          Cualquier visitante puede crear su propia cuenta para reservar
-          habitaciones y consultar sus estancias. No necesitas una cuenta
-          previamente creada por el hotel.
+          Crea tu cuenta con tu correo electrónico para reservar habitaciones
+          y consultar tus estancias. No necesitas que el hotel registre tus datos previamente.
         </p>
 
         <form onSubmit={submit}>
@@ -57,11 +56,14 @@ function RegisterPage() {
             />
           </label>
           <label>
-            Carnet / documento
+            Correo electrónico / Gmail
             <input
-              autoComplete="username"
-              value={carnet}
-              onChange={(event) => setCarnet(event.target.value)}
+              type="email"
+              autoComplete="email"
+              autoCapitalize="none"
+              placeholder="ejemplo@gmail.com"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
               required
             />
           </label>
