@@ -347,3 +347,60 @@
   }
 }
 
+
+
+/* =========================================
+   ACCESO DESTACADO PARA CREAR UNA CUENTA
+========================================= */
+
+.login-register-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e9ed;
+  text-align: center;
+}
+
+.login-register-prompt > span {
+  color: #526273;
+  font-size: 14px;
+}
+
+.login-form .login-register-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 14px 16px;
+  border: 2px solid #d4af37;
+  border-radius: 10px;
+  background: #fff8df;
+  color: #102a43;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.18);
+}
+
+.login-form .login-register-button:hover {
+  background: #d4af37;
+  color: #102a43;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(212, 175, 55, 0.28);
+}
+
+.login-register-prompt small {
+  color: #71808a;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.login-form .login-register-button:focus-visible {
+  outline: 3px solid #102a43;
+  outline-offset: 3px;
+}
