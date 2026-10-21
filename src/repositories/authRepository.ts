@@ -6,21 +6,21 @@ const SESSION_KEY = "app_session";
 const USERS_KEY = "hotel-rolex-users";
 
 // La cuenta ADMIN se conserva como cuenta fija y no se puede crear desde el registro.
-// Los usuarios normales se guardan en el almacenamiento local del navegador.
 const administratorAccounts = (initialUsers as UserRecord[]).filter(
   (user) => user.role === "ADMIN",
 );
 
 const getUsers = (): UserRecord[] => {
   const savedUsers = storageService.get<UserRecord[]>(USERS_KEY) || [];
-  const administratorCarnets = new Set(
-    administratorAccounts.map((user) => user.carnet.trim()),
+  const administratorEmails = new Set(
+    administratorAccounts.map((user) => user.email.toLowerCase()),
   );
 
   const registeredUsers = savedUsers.filter(
     (user) =>
       user.role !== "ADMIN" &&
-      !administratorCarnets.has(user.carnet.trim()),
+      typeof user.email === "string" &&
+      !administratorEmails.has(user.email.toLowerCase()),
   );
 
   return [...administratorAccounts, ...registeredUsers];
@@ -28,10 +28,10 @@ const getUsers = (): UserRecord[] => {
 
 export const authRepository = {
   login(credentials: LoginCredentials): User | null {
-    const normalizedCarnet = credentials.carnet.trim();
+    const normalizedEmail = credentials.email.trim().toLowerCase();
     const foundUser = getUsers().find(
       (user) =>
-        user.carnet.trim() === normalizedCarnet &&
+        user.email.toLowerCase() === normalizedEmail &&
         user.password === credentials.password,
     );
 
@@ -40,7 +40,8 @@ export const authRepository = {
     const user: User = {
       id: foundUser.id,
       name: foundUser.name,
-      carnet: foundUser.carnet,
+      email: foundUser.email,
+      ...(foundUser.carnet ? { carnet: foundUser.carnet } : {}),
       role: foundUser.role,
     };
 
@@ -48,16 +49,17 @@ export const authRepository = {
     return user;
   },
 
-  register(data: { name: string; carnet: string; password: string }): User | null {
+  register(data: { name: string; email: string; password: string }): User | null {
     const users = getUsers();
     const name = data.name.trim();
-    const carnet = data.carnet.trim();
+    const email = data.email.trim().toLowerCase();
+    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
     if (
       !name ||
-      !carnet ||
+      !validEmail ||
       data.password.length < 4 ||
-      users.some((user) => user.carnet.trim() === carnet)
+      users.some((user) => user.email.toLowerCase() === email)
     ) {
       return null;
     }
@@ -65,20 +67,20 @@ export const authRepository = {
     const record: UserRecord = {
       id: `user-${Date.now()}`,
       name,
-      carnet,
+      email,
       password: data.password,
       role: "USUARIO",
     };
 
-    // Se guarda la lista completa de cuentas normales; la cuenta ADMIN se
-    // recupera siempre desde el archivo de cuentas iniciales.
+    // Los usuarios nuevos se guardan localmente; el ADMIN siempre se obtiene
+    // desde el archivo de cuentas iniciales y no puede crearse desde el formulario.
     const registeredUsers = users.filter((user) => user.role !== "ADMIN");
     storageService.set(USERS_KEY, [...registeredUsers, record]);
 
     const user: User = {
       id: record.id,
       name: record.name,
-      carnet: record.carnet,
+      email: record.email,
       role: record.role,
     };
 
