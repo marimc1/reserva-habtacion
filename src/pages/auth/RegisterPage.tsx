@@ -24,7 +24,7 @@ function RegisterPage() {
 
     if (!user) {
       setError(
-        "No se pudo crear la cuenta. Revisa el correo y comprueba que no esté registrado.",
+        "Usa una dirección @gmail.com válida y comprueba que no esté registrada.",
       );
       return;
     }
@@ -41,7 +41,7 @@ function RegisterPage() {
         <span>B&B SANTA CECILIA INC. · NUEVA CUENTA</span>
         <h1>¡Te damos la bienvenida!</h1>
         <p>
-          Crea tu cuenta con tu correo electrónico para reservar habitaciones
+          Crea tu cuenta con tu dirección de Gmail para reservar habitaciones
           y consultar tus estancias. No necesitas que el hotel registre tus datos previamente.
         </p>
 
