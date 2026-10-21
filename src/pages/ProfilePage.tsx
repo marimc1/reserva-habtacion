@@ -21,9 +21,8 @@ function ProfilePage() {
       (reservation) =>
         reservation.userId === user.id ||
         (!reservation.userId &&
-          Boolean(user.carnet) &&
           normalize(reservation.guestName) === normalize(user.name) &&
-          reservation.document.trim() === user.carnet),
+          normalize(reservation.email) === normalize(user.email)),
     );
   }, [user, refresh]);
 
