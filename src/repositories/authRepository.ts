@@ -57,11 +57,11 @@ export const authRepository = {
     const users = getUsers();
     const name = data.name.trim();
     const email = data.email.trim().toLowerCase();
-    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const isGmail = /^[^\s@]+@gmail\.com$/.test(email);
 
     if (
       !name ||
-      !validEmail ||
+      !isGmail ||
       data.password.length < 4 ||
       users.some((user) => user.email.toLowerCase() === email)
     ) {
