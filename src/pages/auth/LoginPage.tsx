@@ -28,23 +28,11 @@ function LoginPage() {
 
   return (
     <main>
-      <LoginForm error={error} onSubmit={handleLogin} />
-      <div style={{ textAlign: "center", padding: "0 20px 35px", background: "#fff" }}>
-        <span style={{ color: "#71808a" }}>¿No tienes una cuenta? </span>
-        <button
-          type="button"
-          onClick={() => navigate("/registro")}
-          style={{
-            border: 0,
-            background: "none",
-            color: "#8a6927",
-            fontWeight: 900,
-            cursor: "pointer",
-          }}
-        >
-          Crear cuenta →
-        </button>
-      </div>
+      <LoginForm
+        error={error}
+        onSubmit={handleLogin}
+        onRegister={() => navigate("/registro")}
+      />
     </main>
   );
 }
