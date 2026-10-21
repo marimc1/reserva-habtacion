@@ -9,22 +9,16 @@ interface LoginFormProps {
 }
 
 function LoginForm({ error, onSubmit }: LoginFormProps) {
-  const [carnet, setCarnet] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
 
-    const normalizedCarnet = carnet.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || !password) return;
 
-    if (!normalizedCarnet || !password) {
-      return;
-    }
-
-    onSubmit({
-      carnet: normalizedCarnet,
-      password,
-    });
+    onSubmit({ email: normalizedEmail, password });
   };
 
   return (
@@ -33,23 +27,22 @@ function LoginForm({ error, onSubmit }: LoginFormProps) {
         <h1>Iniciar sesión</h1>
 
         <div>
-          <label htmlFor="carnet">Carnet de identidad</label>
-
+          <label htmlFor="email">Correo electrónico / Gmail</label>
           <input
-            id="carnet"
-            name="carnet"
-            type="text"
-            value={carnet}
-            onChange={(event) => setCarnet(event.target.value)}
-            placeholder="Ingrese su carnet"
+            id="email"
+            name="email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="ejemplo@gmail.com"
             autoComplete="username"
+            autoCapitalize="none"
             required
           />
         </div>
 
         <div>
           <label htmlFor="password">Contraseña</label>
-
           <input
             id="password"
             name="password"
@@ -75,5 +68,3 @@ function LoginForm({ error, onSubmit }: LoginFormProps) {
 }
 
 export default LoginForm;
-
-
