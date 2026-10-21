@@ -6,9 +6,10 @@ import "./LoginForm.css";
 interface LoginFormProps {
   error?: string;
   onSubmit: (credentials: LoginCredentials) => void;
+  onRegister: () => void;
 }
 
-function LoginForm({ error, onSubmit }: LoginFormProps) {
+function LoginForm({ error, onSubmit, onRegister }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -62,6 +63,18 @@ function LoginForm({ error, onSubmit }: LoginFormProps) {
         )}
 
         <button type="submit">Ingresar</button>
+
+        <div className="login-register-prompt">
+          <span>¿Aún no tienes una cuenta?</span>
+          <button
+            className="login-register-button"
+            type="button"
+            onClick={onRegister}
+          >
+            ✨ Crear cuenta gratis <span aria-hidden="true">→</span>
+          </button>
+          <small>Regístrate en unos pasos y comienza a reservar.</small>
+        </div>
       </form>
     </div>
   );
