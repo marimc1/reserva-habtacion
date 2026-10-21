@@ -45,7 +45,6 @@ export const authRepository = {
       id: foundUser.id,
       name: foundUser.name,
       email: foundUser.email,
-      ...(foundUser.carnet ? { carnet: foundUser.carnet } : {}),
       role: foundUser.role,
     };
 
