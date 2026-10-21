@@ -71,7 +71,7 @@ function LoginForm({ error, onSubmit, onRegister }: LoginFormProps) {
             type="button"
             onClick={onRegister}
           >
-            ✨ Crear cuenta gratis <span aria-hidden="true">→</span>
+            Crear cuenta <span aria-hidden="true">→</span>
           </button>
           <small>Regístrate en unos pasos y comienza a reservar.</small>
         </div>
