@@ -4,11 +4,15 @@ import type { LoginCredentials, User, UserRecord } from "../types/auth";
 
 const SESSION_KEY = "app_session";
 const USERS_KEY = "hotel-rolex-users";
+const ADMIN_EMAIL = "admin@santacecilia.com";
 
-// La cuenta ADMIN se conserva como cuenta fija y no se puede crear desde el registro.
-const administratorAccounts = (initialUsers as UserRecord[]).filter(
-  (user) => user.role === "ADMIN",
-);
+// La cuenta administrativa fija se adapta al nuevo acceso por correo.
+const administratorAccounts = (initialUsers as UserRecord[])
+  .filter((user) => user.role === "ADMIN")
+  .map((user) => ({
+    ...user,
+    email: user.email || ADMIN_EMAIL,
+  }));
 
 const getUsers = (): UserRecord[] => {
   const savedUsers = storageService.get<UserRecord[]>(USERS_KEY) || [];
