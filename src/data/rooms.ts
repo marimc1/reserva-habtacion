@@ -28,7 +28,7 @@ export const roomInventory: Room[] = [
 ];
 
 export type Reservation = {
-  id: string; userId?: string; roomNumber: string; guestName: string; document: string; phone: string; email: string;
+  id: string; userId?: string; roomNumber: string; guestName: string; document?: string; phone: string; email: string;
   checkIn: string; checkOut: string; guests: number; total: number; subtotal?: number; discount?: number; promotionCode?: PromotionCode;
   createdAt: string; status?: ReservationStatus; operationStatus?: OperationStatus; paymentMethod?: PaymentMethod;
   paymentStatus?: PaymentStatus; paymentReference?: string;
@@ -51,10 +51,10 @@ export function hasReservationConflict(roomNumber: string, checkIn: string, chec
   return getReservations().some((reservation) => reservation.status !== "Cancelada" && reservation.roomNumber === roomNumber && checkIn < reservation.checkOut && checkOut > reservation.checkIn);
 }
 
-export function cancelReservation(reservationId: string, user: { id: string; name: string; carnet: string }): boolean {
+export function cancelReservation(reservationId: string, user: { id: string; name: string; email: string }): boolean {
   const reservations = getReservations(); const normalize = (value: string) => value.trim().toLowerCase(); let cancelled = false;
   const updated = reservations.map((reservation) => {
-    const belongsToUser = reservation.userId ? reservation.userId === user.id : reservation.document.trim() === user.carnet.trim() && normalize(reservation.guestName) === normalize(user.name);
+    const belongsToUser = reservation.userId ? reservation.userId === user.id : normalize(reservation.guestName) === normalize(user.name) && normalize(reservation.email) === normalize(user.email);
     if (reservation.id === reservationId && belongsToUser && reservation.status !== "Cancelada") { cancelled = true; return { ...reservation, status: "Cancelada" as const }; }
     return reservation;
   });
