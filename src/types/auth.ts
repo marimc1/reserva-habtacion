@@ -4,8 +4,6 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  // Campo opcional para mantener compatibilidad con reservas antiguas.
-  carnet?: string;
   role: UserRole;
 }
 
