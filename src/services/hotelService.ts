@@ -5,6 +5,37 @@ import { storageService } from "./storageService";
 const ROOM_STATUS_KEY = "hotel-rolex-room-status";
 const NOTIFICATIONS_KEY = "hotel-rolex-notifications";
 
+const CONSULTATIONS_KEY = "hotel-rolex-consultations";
+export type HotelConsultation = {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  date: string;
+  status: "Nueva" | "En revisión" | "Atendida";
+};
+
+export function getConsultations(): HotelConsultation[] {
+  return storageService.get<HotelConsultation[]>(CONSULTATIONS_KEY) || [];
+}
+
+export function addConsultation(input: Pick<HotelConsultation, "name" | "email" | "message">) {
+  const consultations = getConsultations();
+  const consultation: HotelConsultation = {
+    ...input,
+    id: `CON-${Date.now()}`,
+    date: new Date().toISOString(),
+    status: "Nueva",
+  };
+  storageService.set(CONSULTATIONS_KEY, [consultation, ...consultations]);
+  return consultation;
+}
+
+export function updateConsultationStatus(id: string, status: HotelConsultation["status"]) {
+  storageService.set(CONSULTATIONS_KEY, getConsultations().map((item) => item.id === id ? { ...item, status } : item));
+}
+
+
 export type HotelNotification = { id: string; userId: string; text: string; date: string; read: boolean };
 
 export function getEffectiveRooms() {
