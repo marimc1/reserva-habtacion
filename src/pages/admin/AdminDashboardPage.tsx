@@ -3,7 +3,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { getReservations } from "../../data/rooms";
 import type { PaymentStatus } from "../../data/rooms";
 import { authRepository } from "../../repositories/authRepository";
-import { getEffectiveRooms, getHotelStats, setRoomStatus, updateOperationStatus, updatePaymentStatus, updateReservationStatus } from "../../services/hotelService";
+import { getEffectiveRooms, getHotelStats, getConsultations, updateConsultationStatus, setRoomStatus, updateOperationStatus, updatePaymentStatus, updateReservationStatus } from "../../services/hotelService";
 import "./AdminDashboardPage.css";
 
 function AdminDashboardPage() {
@@ -15,6 +15,8 @@ function AdminDashboardPage() {
   const stats = useMemo(() => getHotelStats(), [refresh]);
   const rooms = useMemo(() => getEffectiveRooms(), [refresh]);
   const reservations = useMemo(() => getReservations(), [refresh]);
+  const consultations = useMemo(() => getConsultations(), [refresh]);
+  const newConsultations = consultations.filter((item) => item.status === "Nueva").length;
 
   if (!user) return <Navigate to="/login?redirect=/admin" replace />;
   if (user.role !== "ADMIN") {
@@ -38,7 +40,7 @@ function AdminDashboardPage() {
       </header>
 
       <nav className="admin-tabs">
-        {[[ "resumen", "Resumen" ], [ "reservas", "Reservas" ], [ "calendario", "Calendario" ], [ "habitaciones", "Habitaciones" ], [ "pagos", "Pagos" ], [ "operacion", "Check-in / Check-out" ], [ "usuarios", "Huéspedes" ]].map(([id, label]) => (
+        {[[ "resumen", "Resumen" ], [ "reservas", "Reservas" ], [ "calendario", "Calendario" ], [ "habitaciones", "Habitaciones" ], [ "pagos", "Pagos" ], [ "operacion", "Check-in / Check-out" ], [ "usuarios", "Huéspedes" ], [ "consultas", `Consultas${newConsultations ? ` (${newConsultations})` : ""}` ]].map(([id, label]) => (
           <button className={tab === id ? "active" : ""} onClick={() => setTab(id)} key={id}>{label}</button>
         ))}
       </nav>
@@ -68,11 +70,14 @@ function AdminDashboardPage() {
                   <button onClick={() => setTab("pagos")}>Revisar pagos →</button>
                   <button onClick={() => setTab("habitaciones")}>Gestionar habitaciones →</button>
                   <button onClick={() => setTab("calendario")}>Abrir calendario →</button>
+                  <button onClick={() => setTab("consultas")}>Ver consultas ({newConsultations}) →</button>
                 </div>
               </article>
             </div>
           </>
         )}
+
+        {tab === "consultas" && <ConsultationsPanel consultations={consultations} onRefresh={refreshData} />}
 
         {tab === "reservas" && <AdminTable title="Todas las reservas" reservations={reservations} onRefresh={refreshData} />}
 
@@ -145,6 +150,25 @@ function AdminDashboardPage() {
         )}
       </section>
     </main>
+  );
+}
+
+function ConsultationsPanel({ consultations, onRefresh }: { consultations: Array<{ id: string; name: string; email: string; message: string; date: string; status: "Nueva" | "En revisión" | "Atendida" }>; onRefresh: () => void }) {
+  return (
+    <section className="admin-section">
+      <div className="admin-section-head"><div><span>MENSAJES DE VISITANTES</span><h2>Consultas recibidas</h2></div><button className="admin-refresh" onClick={onRefresh}>Actualizar lista ↻</button></div>
+      {consultations.length === 0 ? <div className="admin-empty"><h3>Aún no hay consultas</h3><p>Cuando una persona envíe el formulario de Contacto, su mensaje aparecerá aquí.</p></div> : (
+        <div className="consultation-list">
+          {consultations.map((item) => (
+            <article className="consultation-card" key={item.id}>
+              <div className="consultation-card__top"><div><span className="consultation-id">{item.id}</span><h3>{item.name}</h3><a href={`mailto:${item.email}`}>{item.email}</a></div><span className={`consultation-status ${item.status.replace(" ", "-")}`}>{item.status}</span></div>
+              <p className="consultation-message">{item.message}</p>
+              <div className="consultation-card__bottom"><small>{new Date(item.date).toLocaleString("es-BO", { dateStyle: "medium", timeStyle: "short" })}</small><label>Estado <select value={item.status} onChange={(event) => { updateConsultationStatus(item.id, event.target.value as "Nueva" | "En revisión" | "Atendida"); onRefresh(); }}><option>Nueva</option><option>En revisión</option><option>Atendida</option></select></label></div>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
