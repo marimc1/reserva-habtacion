@@ -63,7 +63,7 @@ export const authRepository = {
     const users = getUsers();
     const name = data.name.trim();
     const email = data.email.trim().toLowerCase();
-    const isGmail = /^[^\\s@]+@gmail\\.com$/.test(email);
+    const isGmail = /^[^\s@]+@gmail\.com$/.test(email);
 
     if (
       !name ||
