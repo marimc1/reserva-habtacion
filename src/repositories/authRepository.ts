@@ -6,12 +6,19 @@ const SESSION_KEY = "app_session";
 const USERS_KEY = "hotel-rolex-users";
 const ADMIN_EMAIL = "admin@santacecilia.com";
 
-// La cuenta administrativa fija se adapta al nuevo acceso por correo.
-const administratorAccounts = (initialUsers as UserRecord[])
+// El archivo inicial puede no incluir correo; asignamos uno al normalizar
+// los registros antes de tratarlos como UserRecord.
+const administratorAccounts: UserRecord[] = initialUsers
   .filter((user) => user.role === "ADMIN")
   .map((user) => ({
-    ...user,
-    email: user.email || ADMIN_EMAIL,
+    id: user.id,
+    name: user.name,
+    email:
+      "email" in user && typeof user.email === "string" && user.email.trim()
+        ? user.email.trim()
+        : ADMIN_EMAIL,
+    password: user.password,
+    role: user.role as UserRecord["role"],
   }));
 
 const getUsers = (): UserRecord[] => {
@@ -56,7 +63,7 @@ export const authRepository = {
     const users = getUsers();
     const name = data.name.trim();
     const email = data.email.trim().toLowerCase();
-    const isGmail = /^[^\s@]+@gmail\.com$/.test(email);
+    const isGmail = /^[^\\s@]+@gmail\\.com$/.test(email);
 
     if (
       !name ||
