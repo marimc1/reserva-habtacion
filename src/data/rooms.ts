@@ -3,7 +3,7 @@ import familyRoomImage from "../assets/home/habitacion-familiar.svg";
 import suiteRoomImage from "../assets/home/habitacion-suite.svg";
 
 export type RoomStatus = "Disponible" | "Ocupada" | "Mantenimiento";
-export type PaymentMethod = "Tarjeta" | "Transferencia bancaria" | "Efectivo";
+export type PaymentMethod = "Tarjeta" | "Efectivo";
 export type PaymentStatus = "Pagado" | "Pendiente" | "Pendiente de verificación" | "Rechazado";
 export type ReservationStatus = "Activa" | "Cancelada";
 export type OperationStatus = "Reservada" | "Check-in" | "Check-out";
